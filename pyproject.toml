@@ -5,7 +5,7 @@ description = "A bridge between BMI and Landlab"
 keywords = [
     "BMI",
     "Basic Model Interface",
-	"Landlab",
+    "Landlab",
 ]
 authors = [
     { name = "Eric Hutton", email = "huttone@colorado.edu" },
@@ -29,8 +29,8 @@ classifiers = [
 dependencies = [
     "bmipy",
     "landlab",
-	"numpy",
-	"sensible-bmi",
+    "numpy",
+    "sensible-bmi",
 ]
 dynamic = [
     "version",
