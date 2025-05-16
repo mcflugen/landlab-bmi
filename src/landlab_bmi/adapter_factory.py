@@ -11,5 +11,7 @@ def create_bmi_adapter(class_name: str, component: type[Component]) -> type[Bmi]
     return type(class_name, (LandlabBmi,), {"_cls": component})
 
 
-def make_landlab(class_name: str, component: type[Bmi]) -> type[BmiGridManager]:
+def create_landlab_adapter(
+    class_name: str, component: type[Bmi]
+) -> type[BmiGridManager]:
     return type(class_name, (BmiGridManager,), {"_cls": component})
