@@ -138,9 +138,9 @@ class LandlabBmi(Bmi):
 
     def get_grid_y(self, grid: int, y: NDArray[np.floating]) -> None:
         if grid == 0:
-            return self._base.grid.y_of_node
+            y[:] = self._base.grid.y_of_node
         elif grid == 1:
-            return self._base.grid.y_of_corner
+            y[:] = self._base.grid.y_of_corner
 
     def get_grid_z(self, grid: int, z: NDArray[np.floating]) -> None:
         raise NotImplementedError("get_grid_z")
