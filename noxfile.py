@@ -25,7 +25,7 @@ def install(session: nox.Session) -> None:
         if os.path.isfile(first_arg):
             session.install(first_arg)
         else:
-            session.error("path must be a source distribution")
+            session.error("path must be a distribution (e.g. a .tar.gz or .whl file)")
     else:
         session.install(".")
 
