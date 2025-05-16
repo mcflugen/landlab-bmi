@@ -7,7 +7,7 @@ from landlab_bmi._bmi import LandlabBmi
 from landlab_bmi._landlab import BmiGridManager
 
 
-def make_bmi(class_name: str, component: type[Component]) -> type[Bmi]:
+def create_bmi_adapter(class_name: str, component: type[Component]) -> type[Bmi]:
     return type(class_name, (LandlabBmi,), {"_cls": component})
 
 
