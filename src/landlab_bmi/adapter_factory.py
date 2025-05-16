@@ -28,4 +28,18 @@ def create_bmi_adapter(class_name: str, component: type[Component]) -> type[Bmi]
 def create_landlab_adapter(
     class_name: str, component: type[Bmi]
 ) -> type[BmiGridManager]:
+    """Dynamically create a new Landlab-compatible class for a given BMI implementation.
+
+    Parameters
+    ----------
+    class_name : str
+        The name of the generated Landlab-compatible class.
+    component : type[Bmi]
+        The BMI implementation class to be managed.
+
+    Returns
+    -------
+    type[BmiGridManager]
+        A new class inheriting from BmiGridManager, wrapping the provided BMI class.
+    """
     return type(class_name, (BmiGridManager,), {"_cls": component})
