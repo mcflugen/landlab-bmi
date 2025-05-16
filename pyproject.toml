@@ -1,0 +1,114 @@
+[project]
+name = "landlab_bmi"
+requires-python = ">=3.11"
+description = "A bridge between BMI and Landlab"
+keywords = [
+    "BMI",
+    "Basic Model Interface",
+    "Landlab",
+]
+authors = [
+    { name = "Eric Hutton", email = "huttone@colorado.edu" },
+]
+maintainers = [
+    { name = "Eric Hutton", email = "huttone@colorado.edu" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Hydrology",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "bmipy",
+    "landlab",
+    "numpy",
+    "sensible-bmi",
+]
+dynamic = [
+    "version",
+    "readme",
+]
+
+[project.license]
+text = "MIT"
+
+[project.urls]
+documentation = "https://github.com/mcflugen/landlab-bmi"
+homepage = "https://github.com/mcflugen/landlab-bmi"
+repository = "https://github.com/mcflugen/landlab-bmi"
+
+[build-system]
+requires = [
+    "setuptools >=61",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[tool.setuptools.dynamic.version]
+attr = "landlab_bmi._version.__version__"
+
+[project.optional-dependencies]
+dev = [
+    "nox",
+]
+testing = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+
+[tool.coverage.run]
+relative_files = true
+
+[tool.isort]
+known_first_party = "landlab_bmi"
+profile = "black"
+force_single_line = true
+
+[tool.mypy]
+plugins = "numpy.typing.mypy_plugin"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "src",
+    "tests",
+]
+norecursedirs = [
+    ".*",
+    "*.egg*",
+    "build",
+    "dist",
+]
+addopts = [
+    "--ignore=setup.py",
+    "--tb=native",
+    "--durations=16",
+    "--strict-markers",
+    "--doctest-modules",
+    "-vvv",
+]
+
+[tool.zest-releaser]
+tag-format = "v{version}"
+python-file-with-version = "src/landlab_bmi/_version.py"
