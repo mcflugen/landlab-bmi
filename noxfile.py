@@ -34,7 +34,7 @@ def install(session: nox.Session) -> None:
 def test(session: nox.Session) -> None:
     """Run the tests."""
     session.install("pytest", "bmi_wavewatch3", "dask")
-    install(session)
+    session.notify("install")
 
     session.run("pytest", "-vvv")
 
