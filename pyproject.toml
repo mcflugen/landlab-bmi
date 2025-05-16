@@ -30,7 +30,7 @@ dependencies = [
     "bmipy",
     "landlab",
     "numpy",
-    "sensible-bmi",
+    "sensible-bmi @ git+https://github.com/mcflugen/sensible-bmi.git",
 ]
 dynamic = [
     "version",
