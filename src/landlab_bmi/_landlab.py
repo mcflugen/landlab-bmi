@@ -121,14 +121,14 @@ class BmiGridManager(GridManager):
     """
     >>> from bmi_wavewatch3 import BmiWaveWatch3
     >>> from landlab.components import LinearDiffuser
-    >>> from landlab_bmi.make_bmi import make_landlab
+    >>> from landlab_bmi.adapter_factory import create_landlab_adapter
 
     >>> class Ww3Grids(BmiGridManager):
     ...     _cls = BmiWaveWatch3
 
     >>> ww3 = BmiWaveWatch3()
 
-    >>> Ww3Grids = make_landlab("Ww3Grids", BmiWaveWatch3)
+    >>> Ww3Grids = create_landlab_adapter("Ww3Grids", BmiWaveWatch3)
 
     >>> config_file = '''
     ... [wavewatch3]
