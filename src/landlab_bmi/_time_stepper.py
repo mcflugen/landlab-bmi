@@ -3,6 +3,10 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 
+class EndOfTimeError(Exception):
+    pass
+
+
 class TimeStepper:
     """Step through time.
 
@@ -96,4 +100,6 @@ class TimeStepper:
         """Advance the time stepper by one time step."""
         self._time += self.step
         if self._stop is not None and self._time > self._stop:
-            raise StopIteration()
+            raise EndOfTimeError(
+                f"current time is greater than stop time ({self._time} > {self._stop})"
+            )
