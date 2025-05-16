@@ -82,10 +82,15 @@ class LandlabBmi(Bmi):
     def get_grid_nodes_per_face(
         self, grid: int, nodes_per_face: NDArray[np.integer]
     ) -> None:
-        if grid == 0:
-            nodes_per_face[:] = np.full(self._base.grid.number_of_nodes, 3, dtype=int)
-        elif grid == 1 and isinstance(self._base.grid, HexModelGrid):
-            nodes_per_face[:] = np.full(self._base.grid.number_of_faces, 6, dtype=int)
+        if isinstance(self._base.grid, RasterModelGrid):
+            nodes_per_face[:] = 4
+        elif isinstance(self._base.grid, HexModelGrid):
+            if grid == 0:
+                nodes_per_face[:] = 3
+            elif grid == 1 and isinstance(self._base.grid, HexModelGrid):
+                nodes_per_face[:] = 6
+        else:
+            raise TypeError("grid should be either a RasterModelGrid or a HexModelGrid")
 
     def get_grid_origin(self, grid: int, origin: NDArray[np.floating]) -> None:
         if grid == 0:
