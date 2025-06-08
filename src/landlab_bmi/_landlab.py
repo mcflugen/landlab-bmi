@@ -156,6 +156,7 @@ class BmiGridManager(GridManager):
         if self._cls is None:
             raise ValueError("subclasses of `GridManager` must define `_cls`")
         bmi: SensibleBmi = make_sensible(self._cls.__name__, self._cls)()
+        self._bmi: SensibleBmi = bmi
 
         if config_file:
             with as_text_file(config_file) as path:
@@ -180,7 +181,6 @@ class BmiGridManager(GridManager):
                 at=LANDLAB_LOCATION[var.location],
                 units=var.units,
             )
-        self._bmi: SensibleBmi = bmi
 
         self._info = {}
         for var in (bmi.var[name] for name in set(self.outputs) | set(self.inputs)):
