@@ -18,6 +18,7 @@ from landlab import RasterModelGrid
 from landlab.field.graph_field import GraphFields
 from numpy.typing import ArrayLike
 from numpy.typing import NDArray
+from sensible_bmi._grid import SensibleGrid
 from sensible_bmi.sensible_bmi import SensibleBmi
 from sensible_bmi.sensible_bmi import make_sensible
 
@@ -241,6 +242,13 @@ class BmiGridManager(GridManager):
                 var.name, at=LANDLAB_LOCATION[var.location]
             )
             var.get(out=values)
+
+
+def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
+    if grid.type == "uniform_rectilinear":
+        return RasterModelGrid(grid.shape, xy_spacing=grid.spacing)
+    else:
+        raise ValueError(f"BMI grid type not supported ({grid.type})")
 
 
 @contextmanager
