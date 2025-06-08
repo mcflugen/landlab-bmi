@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from types import MappingProxyType
+from typing import Any
 from typing import TextIO
 
 import numpy as np
@@ -20,6 +21,7 @@ from landlab.field.graph_field import GraphFields
 from numpy.typing import ArrayLike
 from numpy.typing import NDArray
 from sensible_bmi._grid import SensibleGrid
+from sensible_bmi._var import SensibleVar
 from sensible_bmi.sensible_bmi import SensibleBmi
 from sensible_bmi.sensible_bmi import make_sensible
 
@@ -180,6 +182,18 @@ class BmiGridManager(GridManager):
             )
         self._bmi: SensibleBmi = bmi
 
+        self._info = {
+            var.name: create_var_info_from_bmi(
+                var,
+                intent=(
+                    f"{'in' if var.name in bmi.input_var_names else ''}"
+                    f"{'out' if var.name in bmi.output_var_names else ''}"
+                ),
+                optional=False,
+            )
+            for var in (bmi.var[name] for name in set(self.outputs) | set(self.inputs))
+        }
+
         self._grids = grids
 
         super().__init__(grids)
@@ -275,6 +289,19 @@ def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
         raise ValueError(
             f"{grid.type!r}: BMI grid type not supported for grid with id {grid.id}"
         )
+
+
+def create_var_info_from_bmi(
+    var: SensibleVar, optional: bool = True, intent: str = "inout"
+) -> dict[str, Any]:
+    return {
+        "dtype": np.dtype(var.type),
+        "intent": intent,
+        "optional": optional,
+        "units": var.units,
+        "mapping": LANDLAB_LOCATION[var.location],
+        "doc": var.name,
+    }
 
 
 @contextmanager
