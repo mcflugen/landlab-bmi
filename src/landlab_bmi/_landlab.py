@@ -15,6 +15,7 @@ from typing import Any
 from typing import TextIO
 
 import numpy as np
+from landlab import FieldError
 from landlab import ModelGrid
 from landlab import RasterModelGrid
 from landlab.field.graph_field import GraphFields
@@ -227,20 +228,28 @@ class BmiGridManager(GridManager):
     def outputs(self) -> tuple[str, ...]:
         return self._bmi.output_var_names
 
-    def set(self, name: str, values: NDArray[np.number]) -> None:
+    def setvalue(self, name: str, values: ArrayLike) -> None:
+        """Set the values of a grid from a BMI variable."""
         try:
-            grid, at = self.find(name)
-        except MissingFieldError:
             var = self._bmi.var[name]
-            grid = self._grids[var.grid]
+        except KeyError as e:
+            e.add_note(f"possibilities are {', '.join(sorted(self._bmi.var))}")
+            raise e
+
+        at = LANDLAB_LOCATION[var.location]
+        grid = self._grids[var.grid]
+
+        try:
+            grid.field_values(name, at=at)[:] = values
+        except FieldError:
             grid.add_field(
-                var.name,
-                np.atleast_1d(values),
-                at=LANDLAB_LOCATION[var.location],
+                name,
+                np.broadcast_to(
+                    np.atleast_1d(values), grid.number_of_elements(at)
+                ).copy(),
+                at=at,
                 units=var.units,
             )
-        else:
-            grid.field_values(name, at=at).fill(values)
 
     def update(self, names: Iterable[str] = ()) -> None:
         """Advance the BMI model one step."""
