@@ -164,6 +164,13 @@ class BmiGridManager(GridManager):
             grid.id: create_model_grid_from_bmi(grid) for grid in bmi.grid.values()
         }
 
+        if any(var.grid is None for var in bmi.var.values()):
+            grids[None] = (
+                next(iter(grids.values()))
+                if len(grids) == 1
+                else GraphFields({"grid": None})
+            )
+
         for var in (bmi.var[name] for name in bmi.output_var_names):
             grids[var.grid].add_field(
                 var.name,
