@@ -160,14 +160,9 @@ class BmiGridManager(GridManager):
         else:
             bmi.initialize(config_file)
 
-        grids = {}
-        for grid_id, grid in bmi.grid.items():
-            if grid.type == "uniform_rectilinear":
-                grids[grid_id] = RasterModelGrid(grid.shape, xy_spacing=grid.spacing)
-            elif grid.type in ("scalar", "vector"):
-                grids[grid_id] = GraphFields({"grid": None})
-            else:
-                raise ValueError(f"BMI grid type not supported ({grid.type})")
+        grids = {
+            grid.id: create_model_grid_from_bmi(grid) for grid in bmi.grid.values()
+        }
 
         for var in (bmi.var[name] for name in bmi.output_var_names):
             grids[var.grid].add_field(
