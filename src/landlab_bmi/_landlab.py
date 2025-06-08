@@ -113,7 +113,7 @@ class GridManager(Mapping[Hashable, ModelGrid]):
         else:
             raise MissingFieldError(name)
 
-    def getvalue(self, name: str) -> NDArray[np.number]:
+    def get_value(self, name: str) -> NDArray[np.number]:
         grid, at = self.find(name)
         return grid.field_values(name, at=at).copy()
 
@@ -228,6 +228,19 @@ class BmiGridManager(GridManager):
     def outputs(self) -> tuple[str, ...]:
         return self._bmi.output_var_names
 
+    def get_value(self, name: str) -> NDArray[np.number]:
+        """Get the values of a grid from a BMI variable."""
+        try:
+            var = self._bmi.var[name]
+        except KeyError as e:
+            e.add_note(f"possibilities are {', '.join(sorted(self._bmi.var))}")
+            raise e
+
+        at = LANDLAB_LOCATION[var.location]
+        grid = self._grids[var.grid]
+
+        return grid.field_values(name, at=at)  # .copy()
+
     def setvalue(self, name: str, values: ArrayLike) -> None:
         """Set the values of a grid from a BMI variable."""
         try:
@@ -262,12 +275,12 @@ class BmiGridManager(GridManager):
     def _update_bmi_values(self, names: Iterable[str] | None = None) -> None:
         names = self._bmi.input_var_names if names is None else names
         for name in names:
-            self._bmi.var[name].set(self.getvalue(name))
+            self._bmi.var[name].set(self.get_value(name))
 
     def _update_landlab_values(self, names: Iterable[str] | None = None) -> None:
         names = self._bmi.output_var_names if names is None else names
         for name in names:
-            out = self.getvalue(name)
+            out = self.get_value(name)
             self.setvalue(name, self._bmi.var[name].get(out=out))
 
 
