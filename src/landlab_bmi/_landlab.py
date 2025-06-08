@@ -243,7 +243,9 @@ class BmiGridManager(GridManager):
             grid.field_values(name, at=at).fill(values)
 
     def update(self, names: Iterable[str] = ()) -> None:
-        self._copy_fields_to_bmi(self._bmi.input_var_names)
+        """Advance the BMI model one step."""
+        self._update_bmi_values(self._bmi.input_var_names)
+
         self._bmi.update()
         self._copy_bmi_to_fields(self._bmi.output_var_names)
 
@@ -272,13 +274,10 @@ class BmiGridManager(GridManager):
             )
             var.set(values)
 
-    def _copy_bmi_to_fields(self, names: Iterable[str] = ()) -> None:
-        """Update grid fields with BMI variables."""
-        for var in (self._bmi.var[name] for name in names):
-            values = self._grids[var.grid].field_values(
-                var.name, at=LANDLAB_LOCATION[var.location]
-            )
-            var.get(out=values)
+    def _update_bmi_values(self, names: Iterable[str] | None = None) -> None:
+        names = self._bmi.input_var_names if names is None else names
+        for name in names:
+            self._bmi.var[name].set(self.getvalue(name))
 
 
 def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
