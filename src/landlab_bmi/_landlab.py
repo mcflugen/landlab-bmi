@@ -247,26 +247,6 @@ class BmiGridManager(GridManager):
         self._update_bmi_values(self._bmi.input_var_names)
 
         self._bmi.update()
-        self._copy_bmi_to_fields(self._bmi.output_var_names)
-
-    def _copy_fields_to_bmi(self, names: Iterable[str] = ()) -> None:
-        """Update BMI variables with grid fields."""
-        missing = {
-            var.name: var
-            for var in (self._bmi.var[name] for name in names)
-            if not self._grids[var.grid].has_field(
-                var.name, at=LANDLAB_LOCATION[var.location]
-            )
-        }
-        if missing:
-            raise ValueError(
-                "\n".join(
-                    ["missing input variables:"]
-                    + sorted(
-                        f"    grid {var.grid}: {var.name}" for var in missing.values()
-                    )
-                )
-            )
 
         self._update_landlab_values(self._bmi.output_var_names)
 
