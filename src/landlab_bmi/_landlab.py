@@ -10,6 +10,8 @@ from collections.abc import Iterator
 from collections.abc import Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Any
 from typing import TextIO
 
 import numpy as np
@@ -182,6 +184,25 @@ class BmiGridManager(GridManager):
         self._grids = grids
 
         super().__init__(grids)
+
+    @property
+    def grid(self) -> ModelGrid | MappingProxyType[int | None, ModelGrid]:
+        grids = self._grids.copy()
+
+        scalar_grid = grids.pop(None, None)
+
+        if not grids:
+            return scalar_grid
+
+        if len(grids) == 1:
+            only_grid = next(iter(grids.values()))
+            return (
+                only_grid
+                if scalar_grid == only_grid
+                else MappingProxyType({None: scalar_grid, **grids})
+            )
+
+        return MappingProxyType(grids)
 
     @property
     def inputs(self) -> tuple[str, ...]:
