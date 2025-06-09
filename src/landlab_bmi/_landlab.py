@@ -180,7 +180,7 @@ class BmiGridManager(GridManager):
             )
         self._bmi: SensibleBmi = bmi
 
-        # self._fields = {var.name: var.grid for var in bmi.var.values()}
+        self._grids = grids
 
         super().__init__(grids)
 
