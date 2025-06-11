@@ -190,18 +190,15 @@ class BmiGridManager(GridManager):
 
         scalar_grid = grids.pop(None, None)
 
-        if not grids:
-            return scalar_grid
-
         if len(grids) == 1:
-            only_grid = next(iter(grids.values()))
-            return (
-                only_grid
-                if scalar_grid == only_grid
-                else MappingProxyType({None: scalar_grid, **grids})
-            )
+            only_grid = list(grids.values())[0]
+            if scalar_grid is only_grid or scalar_grid is None:
+                return only_grid
 
-        return MappingProxyType(grids)
+        if scalar_grid is None:
+            return MappingProxyType(grids)
+        else:
+            return MappingProxyType({None: scalar_grid, **grids})
 
     @property
     def inputs(self) -> tuple[str, ...]:
