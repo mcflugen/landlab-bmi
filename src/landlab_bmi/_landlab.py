@@ -11,7 +11,6 @@ from collections.abc import Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any
 from typing import TextIO
 
 import numpy as np
