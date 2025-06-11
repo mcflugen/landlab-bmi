@@ -186,6 +186,12 @@ class BmiGridManager(GridManager):
 
     @property
     def grid(self) -> ModelGrid | MappingProxyType[int | None, ModelGrid]:
+        """Get the model's grid or grids.
+
+        If only one grid exists, or multiple grids can be combined into one grid,
+        return it directly; otherwise, return an immutable mapping of grid ids to
+        grids.
+        """
         grids = self._grids.copy()
 
         scalar_grid = grids.pop(None, None)
