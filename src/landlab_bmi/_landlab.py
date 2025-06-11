@@ -250,7 +250,9 @@ def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
     if grid.type == "uniform_rectilinear":
         return RasterModelGrid(grid.shape, xy_spacing=grid.spacing)
     else:
-        raise ValueError(f"BMI grid type not supported ({grid.type})")
+        raise ValueError(
+            f"{grid.type!r}: BMI grid type not supported for grid with id {grid.id}"
+        )
 
 
 @contextmanager
