@@ -10,6 +10,7 @@ from collections.abc import Iterator
 from collections.abc import Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import TextIO
 
 import numpy as np
@@ -182,6 +183,28 @@ class BmiGridManager(GridManager):
         self._grids = grids
 
         super().__init__(grids)
+
+    @property
+    def grid(self) -> ModelGrid | MappingProxyType[int | None, ModelGrid]:
+        """Get the model's grid or grids.
+
+        If only one grid exists, or multiple grids can be combined into one grid,
+        return it directly; otherwise, return an immutable mapping of grid ids to
+        grids.
+        """
+        grids = self._grids.copy()
+
+        scalar_grid = grids.pop(None, None)
+
+        if len(grids) == 1:
+            only_grid = list(grids.values())[0]
+            if scalar_grid is only_grid or scalar_grid is None:
+                return only_grid
+
+        if scalar_grid is None:
+            return MappingProxyType(grids)
+        else:
+            return MappingProxyType({None: scalar_grid, **grids})
 
     @property
     def inputs(self) -> tuple[str, ...]:
