@@ -18,6 +18,7 @@ from landlab import RasterModelGrid
 from landlab.field.graph_field import GraphFields
 from numpy.typing import ArrayLike
 from numpy.typing import NDArray
+from sensible_bmi._grid import SensibleGrid
 from sensible_bmi.sensible_bmi import SensibleBmi
 from sensible_bmi.sensible_bmi import make_sensible
 
@@ -159,14 +160,15 @@ class BmiGridManager(GridManager):
         else:
             bmi.initialize(config_file)
 
-        grids = {}
-        for grid_id, grid in bmi.grid.items():
-            if grid.type == "uniform_rectilinear":
-                grids[grid_id] = RasterModelGrid(grid.shape, xy_spacing=grid.spacing)
-            elif grid.type in ("scalar", "vector"):
-                grids[grid_id] = GraphFields({"grid": None})
+        grids = {
+            grid.id: create_model_grid_from_bmi(grid) for grid in bmi.grid.values()
+        }
+
+        if any(var.grid is None for var in bmi.var.values()):
+            if len(grids) == 1:
+                grids[None] = list(grids.values())[0]
             else:
-                raise ValueError(f"BMI grid type not supported ({grid.type})")
+                grids[None] = GraphFields({"grid": None})
 
         for var in (bmi.var[name] for name in bmi.output_var_names):
             grids[var.grid].add_field(
@@ -177,7 +179,7 @@ class BmiGridManager(GridManager):
             )
         self._bmi: SensibleBmi = bmi
 
-        # self._fields = {var.name: var.grid for var in bmi.var.values()}
+        self._grids = grids
 
         super().__init__(grids)
 
@@ -241,6 +243,15 @@ class BmiGridManager(GridManager):
                 var.name, at=LANDLAB_LOCATION[var.location]
             )
             var.get(out=values)
+
+
+def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
+    if grid.type == "uniform_rectilinear":
+        return RasterModelGrid(grid.shape, xy_spacing=grid.spacing)
+    else:
+        raise ValueError(
+            f"{grid.type!r}: BMI grid type not supported for grid with id {grid.id}"
+        )
 
 
 @contextmanager
