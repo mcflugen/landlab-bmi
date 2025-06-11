@@ -165,11 +165,10 @@ class BmiGridManager(GridManager):
         }
 
         if any(var.grid is None for var in bmi.var.values()):
-            grids[None] = (
-                next(iter(grids.values()))
-                if len(grids) == 1
-                else GraphFields({"grid": None})
-            )
+            if len(grids) == 1:
+                grids[None] = list(grids.values())[0]
+            else:
+                grids[None] = GraphFields({"grid": None})
 
         for var in (bmi.var[name] for name in bmi.output_var_names):
             grids[var.grid].add_field(
