@@ -15,6 +15,7 @@ from typing import Any
 from typing import TextIO
 
 import numpy as np
+from landlab import FieldError
 from landlab import ModelGrid
 from landlab import RasterModelGrid
 from landlab.field.graph_field import GraphFields
@@ -112,11 +113,11 @@ class GridManager(Mapping[Hashable, ModelGrid]):
         else:
             raise MissingFieldError(name)
 
-    def getvalue(self, name: str) -> NDArray[np.number]:
+    def get_value(self, name: str) -> NDArray[np.number]:
         grid, at = self.find(name)
         return grid.field_values(name, at=at).copy()
 
-    def setvalue(self, name: str, values: ArrayLike) -> None:
+    def set_value(self, name: str, values: ArrayLike) -> None:
         grid, at = self.find(name)
         grid.field_values(name, at=at)[:] = values
 
@@ -156,6 +157,7 @@ class BmiGridManager(GridManager):
         if self._cls is None:
             raise ValueError("subclasses of `GridManager` must define `_cls`")
         bmi: SensibleBmi = make_sensible(self._cls.__name__, self._cls)()
+        self._bmi: SensibleBmi = bmi
 
         if config_file:
             with as_text_file(config_file) as path:
@@ -180,7 +182,6 @@ class BmiGridManager(GridManager):
                 at=LANDLAB_LOCATION[var.location],
                 units=var.units,
             )
-        self._bmi: SensibleBmi = bmi
 
         self._info = {}
         for var in (bmi.var[name] for name in set(self.outputs) | set(self.inputs)):
@@ -227,58 +228,60 @@ class BmiGridManager(GridManager):
     def outputs(self) -> tuple[str, ...]:
         return self._bmi.output_var_names
 
-    def set(self, name: str, values: NDArray[np.number]) -> None:
+    def get_value(self, name: str) -> NDArray[np.number]:
+        """Get the values of a grid from a BMI variable."""
         try:
-            grid, at = self.find(name)
-        except MissingFieldError:
             var = self._bmi.var[name]
-            grid = self._grids[var.grid]
+        except KeyError as e:
+            e.add_note(f"possibilities are {', '.join(sorted(self._bmi.var))}")
+            raise e
+
+        at = LANDLAB_LOCATION[var.location]
+        grid = self._grids[var.grid]
+
+        return grid.field_values(name, at=at)  # .copy()
+
+    def set_value(self, name: str, values: ArrayLike) -> None:
+        """Set the values of a grid from a BMI variable."""
+        try:
+            var = self._bmi.var[name]
+        except KeyError as e:
+            e.add_note(f"possibilities are {', '.join(sorted(self._bmi.var))}")
+            raise e
+
+        at = LANDLAB_LOCATION[var.location]
+        grid = self._grids[var.grid]
+
+        try:
+            grid.field_values(name, at=at)[:] = values
+        except FieldError:
             grid.add_field(
-                var.name,
-                np.atleast_1d(values),
-                at=LANDLAB_LOCATION[var.location],
+                name,
+                np.broadcast_to(
+                    np.atleast_1d(values), grid.number_of_elements(at)
+                ).copy(),
+                at=at,
                 units=var.units,
             )
-        else:
-            grid.field_values(name, at=at).fill(values)
 
     def update(self, names: Iterable[str] = ()) -> None:
-        self._copy_fields_to_bmi(self._bmi.input_var_names)
+        """Advance the BMI model one step."""
+        self._update_bmi_values(self._bmi.input_var_names)
+
         self._bmi.update()
-        self._copy_bmi_to_fields(self._bmi.output_var_names)
 
-    def _copy_fields_to_bmi(self, names: Iterable[str] = ()) -> None:
-        """Update BMI variables with grid fields."""
-        missing = {
-            var.name: var
-            for var in (self._bmi.var[name] for name in names)
-            if not self._grids[var.grid].has_field(
-                var.name, at=LANDLAB_LOCATION[var.location]
-            )
-        }
-        if missing:
-            raise ValueError(
-                "\n".join(
-                    ["missing input variables:"]
-                    + sorted(
-                        f"    grid {var.grid}: {var.name}" for var in missing.values()
-                    )
-                )
-            )
+        self._update_landlab_values(self._bmi.output_var_names)
 
-        for var in (self._bmi.var[name] for name in names):
-            values = self._grids[var.grid].field_values(
-                var.name, at=LANDLAB_LOCATION[var.location]
-            )
-            var.set(values)
+    def _update_bmi_values(self, names: Iterable[str] | None = None) -> None:
+        names = self._bmi.input_var_names if names is None else names
+        for name in names:
+            self._bmi.var[name].set(self.get_value(name))
 
-    def _copy_bmi_to_fields(self, names: Iterable[str] = ()) -> None:
-        """Update grid fields with BMI variables."""
-        for var in (self._bmi.var[name] for name in names):
-            values = self._grids[var.grid].field_values(
-                var.name, at=LANDLAB_LOCATION[var.location]
-            )
-            var.get(out=values)
+    def _update_landlab_values(self, names: Iterable[str] | None = None) -> None:
+        names = self._bmi.output_var_names if names is None else names
+        for name in names:
+            out = self.get_value(name)
+            self.set_value(name, self._bmi.var[name].get(out=out))
 
 
 def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
