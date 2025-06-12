@@ -176,7 +176,7 @@ class BmiGridManager(GridManager):
         for var in (bmi.var[name] for name in bmi.output_var_names):
             grids[var.grid].add_field(
                 var.name,
-                np.squeeze(var.get()),
+                np.atleast_1d(var.get()),
                 at=LANDLAB_LOCATION[var.location],
                 units=var.units,
             )
