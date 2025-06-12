@@ -182,17 +182,16 @@ class BmiGridManager(GridManager):
             )
         self._bmi: SensibleBmi = bmi
 
-        self._info = {
-            var.name: create_var_info_from_bmi(
-                var,
-                intent=(
-                    f"{'in' if var.name in bmi.input_var_names else ''}"
-                    f"{'out' if var.name in bmi.output_var_names else ''}"
-                ),
-                optional=False,
+        self._info = {}
+        for var in (bmi.var[name] for name in set(self.outputs) | set(self.inputs)):
+            intent = ""
+            if var.name in bmi.input_var_names:
+                intent += "in"
+            if var.name in bmi.output_var_names:
+                intent += "out"
+            self._info[var.name] = create_var_info_from_bmi(
+                var, intent=intent, optional=False
             )
-            for var in (bmi.var[name] for name in set(self.outputs) | set(self.inputs))
-        }
 
         self._grids = grids
 
