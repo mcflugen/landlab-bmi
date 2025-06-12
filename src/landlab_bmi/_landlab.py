@@ -117,7 +117,7 @@ class GridManager(Mapping[Hashable, ModelGrid]):
         grid, at = self.find(name)
         return grid.field_values(name, at=at).copy()
 
-    def setvalue(self, name: str, values: ArrayLike) -> None:
+    def set_value(self, name: str, values: ArrayLike) -> None:
         grid, at = self.find(name)
         grid.field_values(name, at=at)[:] = values
 
@@ -241,7 +241,7 @@ class BmiGridManager(GridManager):
 
         return grid.field_values(name, at=at)  # .copy()
 
-    def setvalue(self, name: str, values: ArrayLike) -> None:
+    def set_value(self, name: str, values: ArrayLike) -> None:
         """Set the values of a grid from a BMI variable."""
         try:
             var = self._bmi.var[name]
@@ -281,7 +281,7 @@ class BmiGridManager(GridManager):
         names = self._bmi.output_var_names if names is None else names
         for name in names:
             out = self.get_value(name)
-            self.setvalue(name, self._bmi.var[name].get(out=out))
+            self.set_value(name, self._bmi.var[name].get(out=out))
 
 
 def create_model_grid_from_bmi(grid: SensibleGrid) -> ModelGrid:
