@@ -33,8 +33,7 @@ def install(session: nox.Session) -> None:
 @nox.session
 def test(session: nox.Session) -> None:
     """Run the tests."""
-    session.install("pytest", "bmi_wavewatch3", "dask")
-    session.notify("install")
+    session.install("-e", ".", "pytest", "bmi_wavewatch3", "dask")
 
     session.run("pytest", "-vvv")
 
