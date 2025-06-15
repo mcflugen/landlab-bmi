@@ -253,7 +253,7 @@ class LandlabBmi(Bmi):
 
     def set_value(self, name: str, src: NDArray[Any]) -> None:
         if name == "boundary_condition_flag":
-            self._base.grid.status_at_node = src.flat
+            self._base.grid.status_at_node[:] = src.flat
         else:
             at = self._info[name]["mapping"]
             self._base.grid[at][name][:] = src.flat
