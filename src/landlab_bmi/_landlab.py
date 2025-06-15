@@ -264,7 +264,7 @@ class BmiGridManager(GridManager):
                 units=var.units,
             )
 
-    def update(self, names: Iterable[str] = ()) -> None:
+    def update(self) -> None:
         """Advance the BMI model one step."""
         self._update_bmi_values(self._bmi.input_var_names)
 
