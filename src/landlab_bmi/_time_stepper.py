@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+import numpy as np
+
 
 class EndOfTimeError(Exception):
     pass
@@ -103,3 +105,11 @@ class TimeStepper:
             raise EndOfTimeError(
                 f"current time is greater than stop time ({self._time} > {self._stop})"
             )
+
+
+def _never_stop(now: float) -> bool:
+    return False
+
+
+def _at_or_past_stop(now: float, stop: float) -> bool:
+    return now > stop or bool(np.isclose(now, stop))
