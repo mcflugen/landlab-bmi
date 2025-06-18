@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from collections.abc import Iterator
 
 import numpy as np
@@ -57,7 +58,11 @@ class TimeStepper:
 
         self._time = start
 
+        if stop is None:
+            self._is_time_to_stop = _never_stop
         else:
+            self._is_time_to_stop = functools.partial(_at_or_past_stop, stop=stop)
+
     def __iter__(self) -> Iterator[float]:
         return self
 
