@@ -103,7 +103,7 @@ class TimeStepper:
         """Time units."""
         return self._units
 
-    def advance(self) -> None:
+    def advance(self) -> float:
         """Advance the time by one step.
 
         Increments the internal time by `step`. If the current time is already
@@ -111,6 +111,11 @@ class TimeStepper:
         `EndOfTime` exception is raised. The final value of `time` may equal or
         exceed `stop`, but no further advances are permitted once this condition
         is reached.
+
+        Returns
+        -------
+        float
+            The updated time after advancing.
 
         Raises
         ------
@@ -123,6 +128,7 @@ class TimeStepper:
                 f"(stop time is {self._stop})"
             )
         self._time += self._step
+        return self._time
 
 
 def _never_stop(now: float) -> bool:
