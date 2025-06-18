@@ -41,7 +41,7 @@ class TimeStepper:
     10.0
     >>> time_stepper = TimeStepper(1.0, 13.0, 2.0)
     >>> [time for time in time_stepper]
-    [1.0, 3.0, 5.0, 7.0, 9.0, 11.0]
+    [3.0, 5.0, 7.0, 9.0, 11.0, 13.0]
     """
 
     def __init__(
