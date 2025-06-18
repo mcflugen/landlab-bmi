@@ -57,16 +57,16 @@ class TimeStepper:
 
         self._time = start
 
-    def __iter__(self) -> Iterator[float]:
-        if self._stop is None:
-            while 1:
-                yield self._time
-                self._time += self._step
         else:
-            while self._time < self._stop:
-                yield self._time
-                self._time += self._step
-        return
+    def __iter__(self) -> Iterator[float]:
+        return self
+
+    def __next__(self) -> float:
+        try:
+            self.advance()
+        except EndOfTimeError:
+            raise StopIteration
+        return self._time
 
     @property
     def time(self) -> float:
