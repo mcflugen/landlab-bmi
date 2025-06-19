@@ -34,11 +34,11 @@ class TimeStepper:
     1.0
     >>> time_stepper.time
     0.0
-    >>> for _ in range(10):
-    ...     time_stepper.advance()
-    ...
+    >>> times = [time_stepper.advance() for _ in range(10)]
     >>> time_stepper.time
     10.0
+    >>> times
+    [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
     >>> time_stepper = TimeStepper(1.0, 13.0, 2.0)
     >>> [time for time in time_stepper]
     [3.0, 5.0, 7.0, 9.0, 11.0, 13.0]
@@ -103,7 +103,7 @@ class TimeStepper:
         """Time units."""
         return self._units
 
-    def advance(self) -> None:
+    def advance(self) -> float:
         """Advance the time by one step.
 
         Increments the internal time by `step`. If the current time is already
@@ -111,6 +111,11 @@ class TimeStepper:
         `EndOfTime` exception is raised. The final value of `time` may equal or
         exceed `stop`, but no further advances are permitted once this condition
         is reached.
+
+        Returns
+        -------
+        float
+            The updated time after advancing.
 
         Raises
         ------
@@ -123,6 +128,7 @@ class TimeStepper:
                 f"(stop time is {self._stop})"
             )
         self._time += self._step
+        return self._time
 
 
 def _never_stop(now: float) -> bool:
