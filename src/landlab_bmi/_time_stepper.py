@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import functools
 from collections.abc import Iterator
+
+import numpy as np
 
 
 class EndOfTimeError(Exception):
@@ -38,7 +41,7 @@ class TimeStepper:
     10.0
     >>> time_stepper = TimeStepper(1.0, 13.0, 2.0)
     >>> [time for time in time_stepper]
-    [1.0, 3.0, 5.0, 7.0, 9.0, 11.0]
+    [3.0, 5.0, 7.0, 9.0, 11.0, 13.0]
     """
 
     def __init__(
@@ -55,16 +58,20 @@ class TimeStepper:
 
         self._time = start
 
-    def __iter__(self) -> Iterator[float]:
-        if self._stop is None:
-            while 1:
-                yield self._time
-                self._time += self._step
+        if stop is None:
+            self._is_time_to_stop = _never_stop
         else:
-            while self._time < self._stop:
-                yield self._time
-                self._time += self._step
-        return
+            self._is_time_to_stop = functools.partial(_at_or_past_stop, stop=stop)
+
+    def __iter__(self) -> Iterator[float]:
+        return self
+
+    def __next__(self) -> float:
+        try:
+            self.advance()
+        except EndOfTimeError:
+            raise StopIteration
+        return self._time
 
     @property
     def time(self) -> float:
@@ -97,9 +104,30 @@ class TimeStepper:
         return self._units
 
     def advance(self) -> None:
-        """Advance the time stepper by one time step."""
-        self._time += self.step
-        if self._stop is not None and self._time > self._stop:
+        """Advance the time by one step.
+
+        Increments the internal time by `step`. If the current time is already
+        at or beyond the `stop` value, advancing is not allowed and an
+        `EndOfTime` exception is raised. The final value of `time` may equal or
+        exceed `stop`, but no further advances are permitted once this condition
+        is reached.
+
+        Raises
+        ------
+        EndOfTime
+            If the time is already at or beyond the stop value.
+        """
+        if self._is_time_to_stop(self._time):
             raise EndOfTimeError(
-                f"current time is greater than stop time ({self._time} > {self._stop})"
+                f"unable to advance from {self._time} to {self._time + self._step}"
+                f"(stop time is {self._stop})"
             )
+        self._time += self._step
+
+
+def _never_stop(now: float) -> bool:
+    return False
+
+
+def _at_or_past_stop(now: float, stop: float) -> bool:
+    return now > stop or bool(np.isclose(now, stop))
